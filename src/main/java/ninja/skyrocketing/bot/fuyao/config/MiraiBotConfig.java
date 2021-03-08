@@ -7,7 +7,7 @@ import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.events.BotEvent;
 import net.mamoe.mirai.utils.BotConfiguration;
 import ninja.skyrocketing.bot.fuyao.FuyaoBotApplication;
-import ninja.skyrocketing.bot.fuyao.function.timely.Timely;
+import ninja.skyrocketing.bot.fuyao.function.functions.TimelyFunction;
 import ninja.skyrocketing.bot.fuyao.listener.admin.BotMessageListener;
 import ninja.skyrocketing.bot.fuyao.listener.group.GroupEventListener;
 import ninja.skyrocketing.bot.fuyao.listener.group.GroupMessageListener;
@@ -39,8 +39,12 @@ public class MiraiBotConfig {
 
     //全局jar根目录
     public static final String jarPath =  FileUtil.GetPath();
+    //全局cache目录
+    public static final String cachePath = jarPath + FileUtil.separator + "cache";
     //全局log文件的File对象
-    public static final File logFile = new File(jarPath + FileUtil.separator + "cache" + FileUtil.separator + "log");
+    public static final File logFile = new File(cachePath + FileUtil.separator + "log");
+    //全局hs卡牌缓存目录
+    public static final String hsCachePath = cachePath + FileUtil.separator + "Hearthstone";
 
     //全局复读消息变量
     public static Map<Long, GroupRepeaterMessage> GroupsRepeaterMessagesMap = new HashMap<>();
@@ -80,7 +84,7 @@ public class MiraiBotConfig {
         eventChannel.registerListenerHost(new BotMessageListener());
 
         //运行定时消息模块
-        Timely.TimelyMessage();
+        TimelyFunction.TimelyMessage();
 
         //发送启动成功消息
         Date endDate = new Date();
