@@ -33,4 +33,9 @@ build/
 .vscode/
 
 ### Config Files ###
+src/main/resources/application.properties
+deviceInfo.json
+MxLibData/*
+cache/*
+/src/test/
 debug.log
