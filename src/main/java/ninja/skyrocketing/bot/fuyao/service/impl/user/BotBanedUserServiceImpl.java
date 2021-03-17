@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * @Author skyrocketing Hong
- * @Date 2020-11-28 15:08:20
+ * @author skyrocketing Hong
+ * @date 2020-11-28 15:08:20
  */
 @Service
 public class BotBanedUserServiceImpl implements BotBanedUserService {
@@ -17,7 +17,7 @@ public class BotBanedUserServiceImpl implements BotBanedUserService {
 
     @Override
     public boolean IsBaned(Long id) {
-        BotBanedUser botBanedUser = botBanedUserMapper.selectByPrimaryKey(id);
+        BotBanedUser botBanedUser = botBanedUserMapper.selectById(id);
         return botBanedUser != null;
     }
 }

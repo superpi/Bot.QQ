@@ -1,4 +1,4 @@
-package ninja.skyrocketing.bot.fuyao.function.exp;
+package ninja.skyrocketing.bot.fuyao.function;
 
 import cn.hutool.core.date.DateUtil;
 import lombok.NoArgsConstructor;
@@ -18,38 +18,38 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 
 /**
- * @Author skyrocketing Hong
- * @Date 2020-11-28 15:56:35
+ * @author skyrocketing Hong
+ * @date 2020-11-28 15:56:35
  */
 
 @Component
 @NoArgsConstructor
-public class Exp {
+public class ExpFunction {
     private static GroupExpService groupExpService;
     private static GroupExpRankNameService groupExpRankNameService;
 
     @Autowired
-    private Exp(GroupExpService groupExpService, GroupExpRankNameService groupExpRankNameService) {
-        Exp.groupExpService = groupExpService;
-        Exp.groupExpRankNameService = groupExpRankNameService;
+    private ExpFunction(GroupExpService groupExpService, GroupExpRankNameService groupExpRankNameService) {
+        ExpFunction.groupExpService = groupExpService;
+        ExpFunction.groupExpRankNameService = groupExpRankNameService;
     }
 
     //签到
-    public static Message SignIn(GroupMessage groupMessage) {
+    public static Message signIn(GroupMessage groupMessage) {
         //创建消息实例
         MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
         //创建群号和QQ号的实例
         GroupUser groupUser = groupMessage.getGroupUser();
         //从数据库中获取当前群中的用户的数据
-        GroupExp groupExp = groupExpService.GetExpByGroupUser(groupUser);
+        GroupExp groupExp = groupExpService.getExpByGroupUser(groupUser);
         //获取当前日期
         Date nowDate = DateUtil.date();
         //随机生成一个经验值
-        int exp = RandomUtil.RandomNum(10) + 10;
+        int exp = RandomUtil.randomNum(10) + 10;
         //用户不存在时，直接插入一条新的数据
         if (groupExp == null) {
             groupExp = new GroupExp(groupUser, exp);
-            int status = groupExpService.InsertExp(groupExp);
+            int status = groupExpService.insertExp(groupExp);
             //数据库问题，插入失败
             if (status == 0) {
                 messageChainBuilder.add("❌ 签到失败" + "\n" + "请联系开发者查看数据库是否出现问题");
@@ -58,7 +58,7 @@ public class Exp {
             //签到成功
             messageChainBuilder.add("✔ 首次签到成功" + "\n" +
                     "获取 " + exp + " 经验值" + "\n" +
-                    "下次签到时间 " + TimeUtil.DateFormatter(new Date(nowDate.getTime() + 28800000))
+                    "下次签到时间 " + TimeUtil.dateFormatter(new Date(nowDate.getTime() + 28800000))
             );
             return messageChainBuilder.asMessageChain();
         }
@@ -69,7 +69,7 @@ public class Exp {
             //如果上次签到时间与当前时间间隔小于8小时，则直接返回消息
             if (nowDate.getTime() - lastSignInDate.getTime() <= 28800000) {
                 messageChainBuilder.add("❌ 签到失败" + "\n" +
-                        "下次签到时间 " + TimeUtil.DateFormatter(new Date(lastSignInDate.getTime() + 28800000))
+                        "下次签到时间 " + TimeUtil.dateFormatter(new Date(lastSignInDate.getTime() + 28800000))
                 );
                 return messageChainBuilder.asMessageChain();
             }
@@ -77,7 +77,7 @@ public class Exp {
             else {
                 //将对象的值改为下一次需要写回数据库的值
                 groupExp.nextExp(exp, nowDate);
-                int status = groupExpService.UpdateExp(groupExp);
+                int status = groupExpService.updateExp(groupExp);
                 //数据库问题，插入失败
                 if (status == 0) {
                     messageChainBuilder.add("❌ 签到失败" + "\n" + "请联系开发者查看数据库是否出现问题");
@@ -88,22 +88,22 @@ public class Exp {
         //签到成功
         messageChainBuilder.add("✔ 签到成功" + "\n" +
                 "获取 " + exp + " 经验值" + "\n" +
-                "下次签到时间 " + TimeUtil.DateFormatter(new Date(groupExp.getSignInDate().getTime() + 28800000))
+                "下次签到时间 " + TimeUtil.dateFormatter(new Date(groupExp.getSignInDate().getTime() + 28800000))
         );
         return messageChainBuilder.asMessageChain();
     }
 
     //EXP查询
-    public static Message ExpQuery(GroupMessage groupMessage) {
+    public static Message expQuery(GroupMessage groupMessage) {
         //创建消息实例
         MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
         //创建群号和QQ号的实例
         GroupUser groupUser = groupMessage.getGroupUser();
         //从数据库中获取当前群中的用户的数据
-        GroupExp groupExp = groupExpService.GetExpByGroupUser(groupUser);
+        GroupExp groupExp = groupExpService.getExpByGroupUser(groupUser);
         if (groupExp != null) {
             long exp = groupExp.getExp();
-            messageChainBuilder.add("🔰 当前等级 " + ExpRank(groupMessage.getGroupUser().getGroupId(), exp) + "\n" +
+            messageChainBuilder.add("🔰 当前等级 " + expRank(groupMessage.getGroupUser().getGroupId(), exp) + "\n" +
                     "🍔 经验值为 " + exp
             );
         } else {
@@ -113,10 +113,10 @@ public class Exp {
     }
 
     //EXP对应等级
-    public static String ExpRank(long id, long exp) {
-        GroupExpRankName groupExpRankName = groupExpRankNameService.GetGroupExpRankNameById(id);
+    public static String expRank(long id, long exp) {
+        GroupExpRankName groupExpRankName = groupExpRankNameService.getGroupExpRankNameById(id);
         if (groupExpRankName == null) {
-            groupExpRankName = groupExpRankNameService.GetGroupExpRankNameById(0L);
+            groupExpRankName = groupExpRankNameService.getGroupExpRankNameById(0L);
         }
         exp -= groupExpRankName.getExpOffset();
         if (exp <= 50) {
@@ -137,13 +137,14 @@ public class Exp {
     }
 
     //清除EXP数据
-    public static int CleanExpData(Long groupId, Long userId) {
+    public static void cleanExpData(Long groupId, Long userId) {
         if (userId == 0L) {
-            return groupExpService.DeleteExpByGroupId(groupId);
+            groupExpService.deleteExpByGroupId(groupId);
+            return;
         }
         if (groupId == 0L) {
 
         }
-        return groupExpService.DeleteExp(new GroupUser(groupId, userId));
+        groupExpService.deleteExp(new GroupUser(groupId, userId));
     }
 }
